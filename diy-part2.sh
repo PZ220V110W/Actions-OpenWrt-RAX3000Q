@@ -10,14 +10,7 @@
 # Description: OpenWrt DIY script part 2 (After Update feeds)
 #
 
-# ============================================================
-# Fix: Prevent netifd from forcefully writing ap_isolate=1
-# ============================================================
-# When multicast_to_unicast is not explicitly disabled on br-lan,
-# netifd forces ap_isolate=1 in hostapd config regardless of the
-# wireless setting, causing intra-BSS client isolation.
-# See: https://github.com/openwrt/openwrt/issues/8159
-# ============================================================
+# Fix 1: Prevent netifd from forcefully writing ap_isolate=1
 mkdir -p files/etc/config
 cat >> files/etc/config/network << "EOF"
 
@@ -26,3 +19,12 @@ config device
     option type 'bridge'
     option multicast_to_unicast '0'
 EOF
+
+# Fix 2: Copy ath11k INTRA_BSS_FWD patch into build
+mkdir -p package/kernel/mac80211/patches/all-ipq50xx
+cp $GITHUB_WORKSPACE/990-ath11k-enable-intra-bss-fwd.patch \
+   package/kernel/mac80211/patches/all-ipq50xx/
+
+# Fix 3: Version marker — verify with: cat /etc/rax3000q-fix
+mkdir -p files/etc
+echo "INTRA_BSS_FIX_20260711" > files/etc/rax3000q-fix
