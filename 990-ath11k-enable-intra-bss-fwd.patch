@@ -4,7 +4,7 @@
  			   arg.channel.freq, arg.vdev_id);
  	}
  
-+	/* Enable intra-BSS forwarding at firmware level.
++	/* Always enable intra-BSS forwarding at firmware level.
 +	 *
 +	 * WMI_VDEV_PARAM_INTRA_BSS_FWD controls whether the wireless
 +	 * firmware forwards data frames between stations associated to
@@ -15,12 +15,13 @@
 +	 * even when the kernel bridge hairpin mode is enabled, because
 +	 * the firmware drops the packets before they reach the host.
 +	 *
-+	 * When ap_isolate is NOT set (default, allow client-to-client),
-+	 * we must enable intra-BSS forwarding in the firmware.
-+	 * When ap_isolate IS set, we disable it to enforce isolation.
++	 * We force-enable forwarding here (fwd_enable = 1) regardless
++	 * of the userspace ap_isolate setting, because netifd may set
++	 * ap_isolate=1 in hostapd when multicast_to_unicast is not
++	 * explicitly disabled, defeating the userspace fix.
 +	 */
 +	if (arvif->vdev_type == WMI_VDEV_TYPE_AP) {
-+		u32 fwd_enable = !arvif->vif->bss_conf.nss_ap_isolate;
++		u32 fwd_enable = 1;
 +
 +		ret = ath11k_wmi_vdev_set_param_cmd(ar, arvif->vdev_id,
 +						    WMI_VDEV_PARAM_INTRA_BSS_FWD,
